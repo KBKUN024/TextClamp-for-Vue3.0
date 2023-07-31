@@ -10,6 +10,11 @@
 - Customizable text lines
 - Easy to understand
 
+## **Effect demonstration**
+<img src="./src/assets/expand.gif" />
+<br/>
+<br/>
+
 ## **Install**
 
 ```
