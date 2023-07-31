@@ -1,6 +1,6 @@
 <h1 align="center">TextClamp Component for Vue3.0</h1>
 <p align="center">
-  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://badgen.net/npm/v/text-clamp-for-vue3" alt="npm package"></a>
+  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://badgen.net/npm/v/text-clamp-for-vue3" alt="npm package"></a> 
 </p>
 
 > *This component is based on the text expansion and collapse component developed by vue 3.0, maybe the simplest and most understandable version of the code on github now, I hope it can help people who need it, if you think the writing is good, welcome to give me a star.*
