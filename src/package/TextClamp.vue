@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { addListener, removeListener } from 'resize-detector'
 import { ref, onMounted, onUnmounted } from 'vue'
-import $ from 'jquery'
 const props = withDefaults(defineProps<{
     text: string; // 传入的文本，必传项
     buttonType?: 'oneLine' | 'tight'; // 展开收起按钮分为：1. oneLine:自身占据单行 2. tight:和文字紧密相邻
@@ -44,11 +43,12 @@ function moveOffsetLeft() {
  */
 function getButtonWidth() {
     // 按钮
-    const buttonElement = $('#textRefSpan').next()[0]
+    // const buttonElement = $('#textRefSpan').next()[0]
+    const buttonElement = document.querySelector('#textRefSpan')?.nextElementSibling as HTMLElement | null;
     // 文本容器
     const textContainer = textClampRef.value as HTMLElement
     // 按钮的宽
-    const buttonWidth = buttonElement.clientWidth
+    const buttonWidth = buttonElement?.clientWidth ?? 0
     // 按钮容器的宽
     const textContainerWidth = textContainer?.clientWidth
     // return出去给其他方法用
@@ -115,12 +115,23 @@ function clampText(clampTag?: string) {
 
     }
 }
+function setStyle_For_TextRefSpan_WhenButtonTypeIs_OneLine() {
+    const element = document.querySelector('#textRefSpan') as HTMLElement;
+    const value = clampClass.value
+    if (element) {
+        Object.keys(clampClass.value).forEach(key => {
+            const styleKey = key as keyof typeof value;
+            element.style.setProperty(styleKey, value[styleKey]);
+        });
+    }
+}
 /**
  * 初始处理一下文本
  */
 function init() {
     // 当按钮是tight时，先将未经截取的文本内容赋值给textRef，因为只有这样才能得到真实的文本行数；若按钮是oneLine时，将显示maxLines那么多行的含省略号的样式加上即可
-    props.buttonType == 'tight' ? (textRef.value && (textRef.value.textContent = props.text)) : $('#textRefSpan').css(clampClass.value)
+    // props.buttonType == 'tight' ? (textRef.value && (textRef.value.textContent = props.text)) : $('#textRefSpan').css(clampClass.value)
+    props.buttonType == 'tight' ? (textRef.value && (textRef.value.textContent = props.text)) : setStyle_For_TextRefSpan_WhenButtonTypeIs_OneLine()
     // 获取当前文本有多少行
     const rects = textRef.value?.getClientRects()
     if (rects) {
@@ -143,12 +154,18 @@ function init() {
 function toggle() {
     // 当按钮的类型是单行类型时
     if (props.buttonType == 'oneLine') {
-        // 当前是折叠状态时，一点就变成展开状态
-        if ($('#textRefSpan').attr('style') !== undefined) {
-            $('#textRefSpan').removeAttr('style')
-        } else {
-            // 当前是展开状态，一点变成折叠状态
-            $('#textRefSpan').css(clampClass.value)
+        const textRefSpan = document.querySelector('#textRefSpan') as HTMLElement;
+        if (textRefSpan) {
+            // 当前是折叠状态时，一点就变成展开状态
+            if (textRefSpan.getAttribute('style')) {
+                textRefSpan.removeAttribute('style');
+            } else {
+                // 当前是展开状态，一点变成折叠状态
+                Object.keys(clampClass.value).forEach(key => {
+                    const styleKey = key as keyof typeof clampClass.value;
+                    textRefSpan.style.setProperty(styleKey, clampClass.value[styleKey]);
+                });
+            }
         }
         expanded.value = !expanded.value
     } else {

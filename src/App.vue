@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Card from "./components/Card.vue";
 import { ref, computed, onMounted } from "vue";
+// import { default as TextClamp2 } from '../src/package/TextClamp.vue';
 let str =
   "The ETH upgrade upgrade timeline has never been clear. The end of December last year, as well as June and August this year, are all hazy dates. This time,the core developers have provided a clear date, market confidence has increased, and the voice is loud, and Ethereum has been impacted. There aretwo voices on Ethereum 2.0 in the market, with hundreds of billions ofdollars at stake. The first is to be pessimistic, thinking that theintroduction of 2.0 with cheap gas fees and large processing capacity willallow more projects to settle in Ethereum, and that the expansion of ETH'sdemand would raise the price of ETH.The second option is to remain solidlybearish.Following 2.0, a large number of ETHs were freed, and mass sellingand homogenization rivalry became more intense.";
 </script>
