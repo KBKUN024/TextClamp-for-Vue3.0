@@ -325,11 +325,6 @@ code {
         box-sizing: border-box;
     }
     
-    .view-source-btn {
-        left: 0.75rem;
-        bottom: 0.75rem;
-    }
-    
     .card-back {
         padding: 0.5rem;
         width: 100%;
