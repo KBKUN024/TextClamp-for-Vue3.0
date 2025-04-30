@@ -1,23 +1,27 @@
 {
   "name": "vue3-text-clamp",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "sh deploy.sh",
+    "build:lib": "vite build --config vite.config.lib.ts && vue-tsc --project tsconfig.lib.json",
+    "prepare-npm": "npm run build:lib && rm -rf dist/npm && mkdir -p dist/npm && cp -r dist/lib/* src/package/package.json README.md dist/npm/ && rm -f dist/npm/vite.svg && rm -f dist/npm/TextClamp.vue && rm -f dist/npm/index.ts",
+    "publish-npm": "cd dist/npm && npm publish"
   },
   "dependencies": {
-    "@types/jquery": "^3.5.16",
-    "jquery": "^3.7.0",
-    "resize-detector": "^0.3.0",
-    "text-clamp-for-vue3": "^0.0.9",
+    "@highlightjs/vue-plugin": "^2.1.0",
+    "highlight.js": "^11.11.1",
     "vue": "^3.2.45"
   },
   "devDependencies": {
+    "@types/node": "^20.13.6",
     "@vitejs/plugin-vue": "^4.0.0",
     "path": "^0.12.7",
+    "terser": "^5.39.0",
     "typescript": "^4.9.3",
     "vite": "^4.0.0",
     "vue-tsc": "^1.0.11"

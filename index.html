@@ -1,16 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/vite.svg"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>TextClamp for Vue3.0</title>
+    <!-- 添加highlight.js CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-dark.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/core.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/xml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/languages/typescript.min.js"></script>
+    <script>
+      // 初始化highlight.js
+      hljs.registerLanguage("html", hljs.xml);
+      // 定义vue语言，基于xml但也支持脚本块
+      hljs.registerLanguage("vue", function(hljs) {
+        return {
+          ...hljs.getLanguage("xml"),
+          subLanguage: ["javascript", "typescript"],
+          contains: [...hljs.getLanguage("xml").contains]
+        };
+      });
+      hljs.configure({ languages: ["html", "vue", "javascript", "typescript"] });
+    </script>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TextClamp for Vue3.0</title>
-</head>
-
-<body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+  <body>
+    <div id="app"></div>
+    <script
+      type="module"
+      src="/src/main.ts"
+    ></script>
+  </body>
 </html>

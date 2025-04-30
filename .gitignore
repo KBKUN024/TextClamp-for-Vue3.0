@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.cursor/rules/textclamp-rules.mdc
+src/output
+src/todo
+deploy.sh
+/output

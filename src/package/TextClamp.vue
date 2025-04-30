@@ -1,217 +1,542 @@
 <script setup lang="ts">
-import { addListener, removeListener } from 'resize-detector'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
+
+// 类型定义
+type ButtonType = 'tight' | 'one-line';
+type ButtonAlign = 'left' | 'right';
+
+// 组件属性定义
 const props = withDefaults(defineProps<{
-    text: string; // 传入的文本，必传项
-    buttonType?: 'oneLine' | 'tight'; // 展开收起按钮分为：1. oneLine:自身占据单行 2. tight:和文字紧密相邻
-    maxLines?: number; // 设置的显示的行数
-    isExpanded?: boolean; // 展开的状态，true：展开，false：收起
+  text: string;                     // 文本内容
+  lines?: number;                  // 显示的行数
+  buttonType?: ButtonType;         // 按钮类型：'tight'(紧贴文本末尾) 或 'one-line'(单独一行)
+  expandText?: string;             // 展开按钮文本
+  collapseText?: string;           // 收起按钮文本
+  maxButtonTextLength?: number;    // 按钮文本最大长度
+  buttonAlign?: ButtonAlign;       // 按钮对齐方式（只对 'one-line' 类型有效）
 }>(), {
-    buttonType: 'oneLine',
-    isExpanded: false,
-    maxLines: 3
+  lines: 3,
+  buttonType: 'tight',
+  expandText: 'Expand',
+  collapseText: 'Collapse',
+  maxButtonTextLength: 15,         // 默认最大按钮文本长度
+  buttonAlign: 'right'             // 默认对齐方式为右对齐
 })
-const textClampRef = ref<HTMLElement | null>(null) // 最外层div的ref
-const textRef = ref<HTMLElement | null>(null) // 该组件放文本内容的ref
-const toggleButtonRef = ref<HTMLElement | null>(null)
-const expanded = ref(props.isExpanded) //本地的expanded状态，先获取一遍属性中的isExpanded状态，然后才能用toggle方法进行修改
-const offset = ref(0) // 这个是文本的截取位置，初始从0开始截取
-// 这个是按钮为单行的模式下的折叠文本的css
-const clampClass = ref({
-    'display': '-webkit-box',
-    '-webkit-box-orient': 'vertical',
-    '-webkit-line-clamp': `${props.maxLines}`,// 这里可以根据给定的行数设置具体的clamp行数，这也是我要将css封装成一个对象的目的
-    'overflow': 'hidden',
-    'text-overflow': 'ellipsis'
-})
-/**
- * 将文本截取标志offset往右移动一个单位，同时截取文本并赋值
- */
-function moveOffsetRight() {
-    offset.value = offset.value + 1
-    textRef.value && (textRef.value.textContent = props.text.slice(0, offset.value) + '...')
-}
-/**
- * 将文本截取标志offset往左移动一个单位，同时截取文本并赋值
- */
-function moveOffsetLeft() {
-    offset.value = offset.value - 1
-    textRef.value && (textRef.value.textContent = props.text.slice(0, offset.value) + '...')
-}
-/**
- * 获取一下展开收起按钮的宽度以及文本容器的宽度
- */
-function getButtonWidth() {
-    // 按钮
-    // const buttonElement = $('#textRefSpan').next()[0]
-    const buttonElement = document.querySelector('#textRefSpan')?.nextElementSibling as HTMLElement | null;
-    // 文本容器
-    const textContainer = textClampRef.value as HTMLElement
-    // 按钮的宽
-    const buttonWidth = buttonElement?.clientWidth ?? 0
-    // 按钮容器的宽
-    const textContainerWidth = textContainer?.clientWidth
-    // return出去给其他方法用
-    return { buttonWidth, textContainerWidth }
-}
-/**
- * 获取文本矩形的个数，rects的length反映真实的文本行数
- */
-function getRects() {
-    const rects = textRef.value?.getClientRects() as DOMRectList
-    let rectsLength: number = 0;
-    if (rects) {
-        rectsLength = rects?.length
-    }
-    return { rects, rectsLength }
-}
-/**
- * 收紧文本
- * ?实现思路：比较按钮宽度加最后一个矩形框的宽度是否会大于文本容器宽度，若大于，递归调用自身，即调用moveOffsetLeft()，进一步缩紧文本，否则直接return
- */
-function tightText() {
-    let { rects } = getRects()
-    const { buttonWidth, textContainerWidth } = getButtonWidth()
-    moveOffsetLeft()
-    if (rects[rects.length - 1].width + buttonWidth > textContainerWidth) {
-        tightText();
-    } else {
-        return
-    }
 
-}
-/**
- * 截取文本
- * @param clampTag 一个用来判断需要进行截取的标志，只有clampTag的值为'canClamp'的时候，才可以调用clampText()，这样做是因为在文本展开的情况下，调整浏览器的宽度会引起截取文本的操作，这样展开的文本又会变成截取的，同时按钮的文本却还是停留在Collapse的情况，为了避免这种情况，才加的这个tag
- */
-function clampText(clampTag?: string) {
-    // 当文本是未展开且clampTag的值为canClamp时才可以进行截取文本的操作。如果你不知道为什么要这么做，可以试试将下面一行的if判断去掉，然后将文本展开，随即调整浏览器宽度试试，你应该就明白了
-    if (!expanded.value || clampTag == 'canClamp') {
-        // 首先进行一次截取，首次截取时是slice(0,0)，因为offset的初始值为0
-        textRef.value && (textRef.value.textContent = props.text.slice(0, offset.value) + '...')
-        // 进行一个无限循环来大致寻找出文本的最终位置的大致位置
-        while (true) {
-            let { rects, rectsLength } = getRects()
-            const { buttonWidth, textContainerWidth } = getButtonWidth()
-            // 当给定的maxLines会比所得的矩形个数（即真实行数）大的话，就往右移动进行截取
-            if (props.maxLines > rectsLength) {
-                moveOffsetRight();
-            } else if (props.maxLines < rectsLength) {
-                moveOffsetLeft(); // 否则向左移动进行截取
-            } else {
-                // 若给定行数和真实行数相等时，这个时候就要比较最后一个矩形的width加上按钮的width会不会超过文本容器的width了
-                // 当下面的if成立时，需要往右移动进行截取，因为这个else是给定行数和真实行数相等的情况，若不这么做，可能第三行就截取了几个字符就不能继续进行截取了
-                if (rects[rects.length - 1].width + buttonWidth <= textContainerWidth) {
-                    moveOffsetRight();
-                    continue; // 往右截取之后，需要continue再执行一次循环，若还是这个if的情况，继续向右截取
-                } else {
-                    // 这种情况就可能是最后一个矩形的width加上按钮的width超过了文本容器的width了，这个时候就要进行收紧文本，保证按钮会紧贴着文本
-                    tightText()
-                }
-                // 最后记得要退出无限循环
-                break;
-            }
-        }
+// 元素引用
+const textClampRef = ref<HTMLElement | null>(null)    // 容器元素
+const textRef = ref<HTMLElement | null>(null)         // 文本元素
+const buttonRef = ref<HTMLElement | null>(null)       // 按钮元素
 
-    }
-}
-function setStyle_For_TextRefSpan_WhenButtonTypeIs_OneLine() {
-    const element = document.querySelector('#textRefSpan') as HTMLElement;
-    const value = clampClass.value
-    if (element) {
-        Object.keys(clampClass.value).forEach(key => {
-            const styleKey = key as keyof typeof value;
-            element.style.setProperty(styleKey, value[styleKey]);
-        });
-    }
-}
-/**
- * 初始处理一下文本
- */
-function init() {
-    // 当按钮是tight时，先将未经截取的文本内容赋值给textRef，因为只有这样才能得到真实的文本行数；若按钮是oneLine时，将显示maxLines那么多行的含省略号的样式加上即可
-    // props.buttonType == 'tight' ? (textRef.value && (textRef.value.textContent = props.text)) : $('#textRefSpan').css(clampClass.value)
-    props.buttonType == 'tight' ? (textRef.value && (textRef.value.textContent = props.text)) : setStyle_For_TextRefSpan_WhenButtonTypeIs_OneLine()
-    // 获取当前文本有多少行
-    const rects = textRef.value?.getClientRects()
-    if (rects) {
-        // 当给定的maxLines的行数要比真正文本的行数还要小或者刚好相等时，此时需要进行文本的截取
-        if (props.maxLines <= rects.length) {
-            clampText('canClamp')
-        } else {
-            // 此时maxLines大于或者等于真正的文本行数，此时无需截取，之前将所有文本显示出来就好
-            /**
-             * !顺带一提，当按钮类型为oneLine时，是直接执行的这个else，因为本函数的开头在按钮为oneLine时为TextRefSpan设置了style，这会导致getClientRects只能取到一个矩形，即使用了css省略后的矩形，此时直接将textRef的内容设置为原文即可，css会自动省略，显示给定的行数
-              */
-            textRef.value && (textRef.value.textContent = props.text)
-        }
-    }
+// 状态
+const expanded = ref(false)
+const offset = ref(0)
+const showButton = ref(false)
+const isMounted = ref(false)
+
+// 文本截断工具函数
+function truncateText(text: string, maxLength: number): string {
+  return text.length <= maxLength ? text : text.slice(0, maxLength) + '...'
 }
 
-/**
- * 切换展开收起的方法
- */
-function toggle() {
-    // 当按钮的类型是单行类型时
-    if (props.buttonType == 'oneLine') {
-        const textRefSpan = document.querySelector('#textRefSpan') as HTMLElement;
-        if (textRefSpan) {
-            // 当前是折叠状态时，一点就变成展开状态
-            if (textRefSpan.getAttribute('style')) {
-                textRefSpan.removeAttribute('style');
-            } else {
-                // 当前是展开状态，一点变成折叠状态
-                Object.keys(clampClass.value).forEach(key => {
-                    const styleKey = key as keyof typeof clampClass.value;
-                    textRefSpan.style.setProperty(styleKey, clampClass.value[styleKey]);
-                });
-            }
-        }
-        expanded.value = !expanded.value
-    } else {
-        // 当按钮的类型是tight类型时
-        // 若当前是未展开的情况，那么点击toggle，就要显示出所有的文本
-        if (!expanded.value) {
-            // 判断，若当前（即点击toggle之前）是收起的状态，那么需要将文本展开，显示未截取的原文本
-            // 此时要将监听去掉，不然在mounted中的监听会让文本又变成省略的状态
-            props.buttonType == 'tight' && removeListener(textClampRef.value as HTMLElement)
-            textRef.value && (textRef.value.textContent = props.text)
-        } else {
-            // 若当前已经是展开了的状态了，那么需要对文本进行截取，调用截取方法
-            clampText('canClamp')
-        }
-        // 切换一下展开收起的状态
-        expanded.value = !expanded.value
-        // 然后别忘记将监听加上
-        props.buttonType == 'tight' && addListener(textClampRef.value as HTMLElement, () => {
-            clampText()
-        })
-    }
+// CSS样式对象
+const clampStyle = computed(() => ({
+  'display': '-webkit-box',
+  '-webkit-box-orient': 'vertical',
+  '-webkit-line-clamp': `${props.lines}`,
+  'overflow': 'hidden',
+  'text-overflow': 'ellipsis'
+}))
+
+// 监听属性变化统一处理函数
+const refreshLayout = () => {
+  if (!isMounted.value) return
+  
+  // 保存当前展开状态
+  const wasExpanded = expanded.value
+  
+  nextTick(() => {
+    // 重置状态但保留展开状态
+    reset(false)
+    
+    // 重新初始化并保持原有展开状态
+    init(wasExpanded)
+  })
 }
-onMounted(() => {
-    init()
-    // 当按钮的类型是tight时才启动这个监听器
-    if (textClampRef.value && props.buttonType == 'tight') {
-        addListener(textClampRef.value as HTMLElement, () => {
-            clampText()
-        })
-    }
-})
-onUnmounted(() => {
-    // 卸载的时候取消对textClampRef的监听
-    if (textClampRef.value && props.buttonType == 'tight') {
-        removeListener(textClampRef.value as HTMLElement)
-    }
-}
+
+// 使用一个watch监听所有可能导致需要重新计算布局的属性变化
+watch(
+  [() => props.text, () => props.lines, () => props.buttonType, () => props.expandText, () => props.collapseText, () => props.buttonAlign], 
+  refreshLayout
 )
+
+// 设置文本内容
+function setTextContent(content: string) {
+  if (!textRef.value) return
+  
+  try {
+    textRef.value.textContent = content
+  } catch (error) {
+    /* 静默处理错误 */
+  }
+}
+
+// 重置状态
+function reset(resetExpanded = true) {
+  if (resetExpanded) {
+    expanded.value = false
+  }
+  
+  offset.value = 0
+  
+  if (textRef.value) {
+    try {
+      textRef.value.textContent = ''
+      textRef.value.style.cssText = ''
+    } catch (error) {
+      /* 静默处理错误 */
+    }
+  }
+}
+
+// 切换展开/收起状态
+function toggle(event?: Event) {
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  
+  expanded.value = !expanded.value
+  
+  // 使用nextTick确保状态更新后再更新DOM
+  nextTick(updateTextDisplay)
+}
+
+// 更新文本显示
+function updateTextDisplay() {
+  if (!textRef.value) return
+  
+  if (expanded.value) {
+    // 展开状态 - 显示全部文本
+    removeTextStyles()
+    setTextContent(props.text)
+  } else {
+    // 收起状态 - 应用截断样式
+    if (props.buttonType === 'one-line') {
+      applyOneLineStyles()
+    } else {
+      offset.value = 0  // 重置偏移量
+      applyTightStyles()
+    }
+  }
+}
+
+// 应用紧贴模式样式
+function applyTightStyles() {
+  if (!textRef.value) return
+  
+  removeTextStyles()
+  setTextContent(props.text)
+  nextTick(() => clampText(true))
+}
+
+// 应用单行模式样式
+function applyOneLineStyles() {
+  if (!textRef.value) return
+  
+  Object.entries(clampStyle.value).forEach(([key, value]) => {
+    if (textRef.value) {
+      textRef.value.style[key as any] = value
+    }
+  })
+  setTextContent(props.text)
+}
+
+// 移除文本样式
+function removeTextStyles() {
+  if (!textRef.value) return
+  textRef.value.style.cssText = ''
+}
+
+// 移动截断位置并更新文本
+function updateTextWithOffset() {
+  if (!textRef.value) return
+  
+  const safeOffset = Math.max(0, Math.min(offset.value, props.text.length))
+  setTextContent(props.text.slice(0, safeOffset) + '...')
+}
+
+// 移动截断位置（右移）
+function moveOffsetRight() {
+  offset.value = Math.min(offset.value + 1, props.text.length)
+  updateTextWithOffset()
+}
+
+// 移动截断位置（左移）
+function moveOffsetLeft() {
+  offset.value = Math.max(0, offset.value - 1)
+  updateTextWithOffset()
+}
+
+// 获取元素宽度
+function getElementWidths() {
+  if (!textClampRef.value) {
+    return { buttonWidth: 0, textContainerWidth: 0 }
+  }
+  
+  // 先尝试获取自定义按钮
+  let buttonElement = textClampRef.value.querySelector('.custom-button') as HTMLElement
+  
+  // 如果没有自定义按钮，就使用默认按钮
+  if (!buttonElement && buttonRef.value) {
+    buttonElement = buttonRef.value
+  }
+  
+  const buttonWidth = buttonElement ? buttonElement.offsetWidth || 0 : 0
+  const textContainerWidth = textClampRef.value.clientWidth || 0
+  
+  return { buttonWidth, textContainerWidth }
+}
+
+// 获取文本矩形
+function getTextRects() {
+  if (!textRef.value) {
+    return { rects: [], rectsLength: 0 }
+  }
+  
+  // 强制重新计算布局
+  void textRef.value.offsetHeight
+  
+  const rects = Array.from(textRef.value.getClientRects() || [])
+  return { rects, rectsLength: rects.length }
+}
+
+// 收紧文本，确保按钮紧贴文本末尾
+function tightText(maxIterations = 50) {
+  // 防止无限递归，设置最大迭代次数和最小偏移量
+  if (maxIterations <= 0 || !textRef.value || offset.value <= 0) return
+  
+  const { rects } = getTextRects()
+  if (!rects || rects.length === 0) return
+  
+  const { buttonWidth, textContainerWidth } = getElementWidths()
+  moveOffsetLeft()
+  
+  if (rects[rects.length - 1].width + buttonWidth > textContainerWidth) {
+    tightText(maxIterations - 1)
+  }
+}
+
+// 截断文本
+function clampText(canClamp = false) {
+  if (expanded.value && !canClamp) return
+  
+  if (!textRef.value) return
+  
+  updateTextWithOffset()
+  
+  // 防止无限循环
+  const maxIterations = 500
+  let iterations = 0
+  
+  // 迭代查找最佳截断位置
+  while (iterations < maxIterations) {
+    iterations++
+    
+    const { rects, rectsLength } = getTextRects()
+    if (!rects || rectsLength === 0) break
+    
+    const { buttonWidth, textContainerWidth } = getElementWidths()
+    
+    if (props.lines > rectsLength) {
+      moveOffsetRight()
+    } else if (props.lines < rectsLength) {
+      moveOffsetLeft()
+    } else {
+      // 行数相等，检查最后一行是否有足够空间放置按钮
+      if (rects[rects.length - 1].width + buttonWidth <= textContainerWidth) {
+        moveOffsetRight()
+        continue
+      } else {
+        tightText()
+        break
+      }
+    }
+  }
+}
+
+// 检查是否需要显示按钮（使用记忆化计算避免重复计算）
+const checkShouldShowButton = (() => {
+  let cache = { text: '', lines: 0, result: false };
+  
+  return function() {
+    if (!textRef.value) return false
+    
+    // 如果文本和行数没有变化，直接返回缓存结果
+    if (cache.text === props.text && cache.lines === props.lines) {
+      return cache.result;
+    }
+    
+    const originalContent = textRef.value.textContent
+    
+    // 设置完整文本
+    setTextContent(props.text)
+    
+    // 获取文本行数
+    const { rectsLength } = getTextRects()
+    cache = { text: props.text, lines: props.lines, result: rectsLength > props.lines };
+    
+    // 恢复原始内容
+    setTextContent(originalContent || '')
+    
+    return cache.result
+  }
+})()
+
+// 初始化
+function init(keepExpanded = false) {
+  if (!textRef.value) return
+  
+  // 先显示完整文本，检查是否需要截断
+  setTextContent(props.text)
+  
+  // 使用 nextTick 确保内容已经渲染
+  nextTick(() => {
+    showButton.value = checkShouldShowButton()
+    
+    if (keepExpanded) {
+      expanded.value = true
+      removeTextStyles()
+      setTextContent(props.text)
+    } else if (showButton.value && !expanded.value) {
+      if (props.buttonType === 'one-line') {
+        applyOneLineStyles()
+      } else {
+        offset.value = 0  // 确保从零开始
+        clampText(true)
+      }
+    }
+  })
+}
+
+// 使用防抖函数处理resize事件
+const debouncedRefreshLayout = (() => {
+  let timer: number | null = null;
+  return function() {
+    if (timer) window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      refreshLayout();
+      timer = null;
+    }, 100);
+  };
+})();
+
+// ResizeObserver实现
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  // 标记组件已挂载
+  isMounted.value = true
+  
+  nextTick(() => {
+    // 确保DOM已经渲染完成
+    init()
+    
+    // 使用ResizeObserver监听尺寸变化
+    if (textClampRef.value && window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(debouncedRefreshLayout)
+      resizeObserver.observe(textClampRef.value)
+    }
+  })
+})
+
+onUnmounted(() => {
+  // 标记组件已卸载
+  isMounted.value = false
+  
+  // 清理ResizeObserver
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+})
+
+// 定义切换文本
+const toggleText = computed(() => {
+  const text = expanded.value ? props.collapseText : props.expandText
+  return truncateText(text, props.maxButtonTextLength)
+})
+
+// 用于暴露给插槽的按钮文本，包含长度限制
+const limitedExpandText = computed(() => truncateText(props.expandText, props.maxButtonTextLength))
+const limitedCollapseText = computed(() => truncateText(props.collapseText, props.maxButtonTextLength))
+
+// 按钮类样式
+const buttonClass = computed(() => {
+  const classes = ['text-clamp-button', `text-clamp-button--${props.buttonType}`]
+  // 移除未使用的类，只保留必要的类名
+  return classes
+})
+
+// 导出组件方法给外部使用
+defineExpose({
+  toggle,
+  expanded
+})
 </script>
 
 <template>
-    <div ref="textClampRef">
-        <span ref="textRef" id="textRefSpan"></span>
-        <slot ref="toggleButtonRef" name="textExpandButton" :toggle="toggle" :buttonType="buttonType"
-            :isExpanded="expanded"></slot>
-    </div>
+  <div ref="textClampRef" class="text-clamp">
+    <span ref="textRef" class="text-clamp__text"></span>
+    
+    <!-- 仅当需要截断时显示按钮 -->
+    <template v-if="showButton">
+      <!-- 为one-line模式添加包装容器 -->
+      <div v-if="buttonType === 'one-line'" 
+           :class="[
+             'text-clamp-button--one-line-wrapper', 
+             `text-clamp-button--one-line-wrapper-${buttonAlign}`
+           ]">
+        <!-- 使用插槽自定义按钮 -->
+        <slot name="expandButton" 
+              :toggle="toggle" 
+              :is-expanded="expanded"
+              :button-type="buttonType"
+              :button-align="buttonAlign"
+              :limited-expand-text="limitedExpandText"
+              :limited-collapse-text="limitedCollapseText">
+          
+          <!-- 默认按钮实现 -->
+          <button
+            ref="buttonRef"
+            :class="buttonClass"
+            type="button"
+            @click="toggle"
+            :title="expanded ? props.collapseText : props.expandText">
+            {{ toggleText }}
+          </button>
+        </slot>
+      </div>
+      
+      <!-- 为tight模式保持原有结构 -->
+      <slot v-else name="expandButton" 
+            :toggle="toggle" 
+            :is-expanded="expanded"
+            :button-type="buttonType"
+            :button-align="buttonAlign"
+            :limited-expand-text="limitedExpandText"
+            :limited-collapse-text="limitedCollapseText">
+        
+        <!-- 默认按钮实现 -->
+        <button
+          ref="buttonRef"
+          :class="buttonClass"
+          type="button"
+          @click="toggle"
+          :title="expanded ? props.collapseText : props.expandText">
+          {{ toggleText }}
+        </button>
+      </slot>
+    </template>
+  </div>
 </template>
-<style scoped></style>
+
+<style scoped>
+/* 文本截断容器 */
+.text-clamp {
+  position: relative;
+  width: 100%;
+}
+
+/* 文本元素样式 */
+.text-clamp__text {
+  word-break: break-word;
+}
+
+/* 按钮基础样式 */
+.text-clamp-button {
+  background: none;
+  border: none;
+  color: hsl(217.2 91.2% 59.8%);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-family: inherit;
+  padding: 0 4px;
+  transition: color 0.2s, transform 0.5s ease;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px; /* 按钮宽度限制 */
+}
+
+/* 按钮悬停效果 */
+.text-clamp-button:hover {
+  color: hsl(221.2 83.2% 53.3%);
+  transform: scale(1.05);
+}
+
+/* 紧贴文本样式 - 按钮和文本在同一行 */
+.text-clamp-button--tight {
+  display: inline;
+  margin-left: 4px;
+}
+
+/* 单独一行样式 - 使用包装div实现按钮对齐但不占满整行 */
+.text-clamp-button--one-line {
+  display: inline-block; /* 使用内联块级元素 */
+  width: auto; /* 宽度适应内容 */
+  margin-top: 8px;
+}
+
+/* 单独一行的包装容器，用于控制对齐 */
+.text-clamp-button--one-line-wrapper {
+  display: block;
+  width: 100%;
+  text-align: right; /* 默认右对齐 */
+}
+
+/* 左对齐包装容器 */
+.text-clamp-button--one-line-wrapper-left {
+  text-align: left;
+}
+
+/* 右对齐包装容器 */
+.text-clamp-button--one-line-wrapper-right {
+  text-align: right;
+}
+
+/* 自定义按钮样式 */
+:deep(.custom-button--tight) {
+  display: inline !important;
+  margin-left: 4px !important;
+  margin-top: 0 !important;
+  vertical-align: middle !important;
+  max-width: 150px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+:deep(.custom-button--one-line) {
+  display: inline-block !important;
+  margin-top: 8px !important;
+  max-width: 150px !important;
+  width: auto !important;
+}
+
+:deep(.text-clamp-button--one-line-wrapper) {
+  display: block !important;
+  width: 100% !important;
+}
+
+:deep(.text-clamp-button--one-line-wrapper-left) {
+  text-align: left !important;
+}
+
+:deep(.text-clamp-button--one-line-wrapper-right) {
+  text-align: right !important;
+}
+</style>
+
 

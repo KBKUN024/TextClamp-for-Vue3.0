@@ -1,61 +1,123 @@
-<h1 align="center">TextClamp Component for Vue3.0</h1>
+# TextClamp for Vue 3.0
+
 <p align="center">
-  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://badgen.net/npm/v/text-clamp-for-vue3" alt="npm package"></a> 
+  <img src="./src/assets/logo.jpeg" alt="TextClamp Logo" width="200">
 </p>
 
-> *This component is based on the text expansion and collapse component developed by vue 3.0, maybe the simplest and most understandable version of the code on github now, I hope it can help people who need it, if you think the writing is good, welcome to give me a star.*
-<br/>
+<p align="center">
+  <a href="./README.md" id="en-link">English</a> | <a href="./README.zh-CN.md" id="zh-link">中文</a>
+</p>
 
-- Customizable button types
-- Customizable text lines
-- Easy to understand
+<div id="english-doc">
 
-## **Effect demonstration**
-<img src="./src/assets/expand.gif" />
-<br/>
-<br/>
+## Introduction
 
-## **Install**
+TextClamp is a lightweight Vue 3 component for elegant text truncation with "expand/collapse" functionality. It provides an intuitive way to handle large blocks of text in your Vue applications.
 
-```
-    npm install text-clamp-for-vue3
-```
+## Features
 
-## **Full import**
+- ⚡️ **Lightweight** - Minimal impact on your bundle size
+- 🔥 **Simple API** - Just pass your text and go!
+- 📐 **Line Control** - Specify exactly how many lines to display
+- 🎨 **Customizable Buttons** - Choose button position and style
+- 🔄 **Reactive** - Responds to all prop changes in real-time
+- 🔍 **Type-safe** - Written in TypeScript for better development experience
+- 🧩 **Slot Support** - Customize expand/collapse buttons with slots
+- 🎯 **Zero Dependencies** - Uses native browser capabilities
 
-```javascript
-    import { createApp } from "vue";
-    import TextClamp from 'text-clamp-for-vue3'
-    import App from "./App.vue";
-    const app = createApp(App);
-    app.use(TextClamp).mount("#app");
-```
-## **Usage**
+## Installation
 
-```javascript
-    <TextClamp :text="str" :buttonType="'tight'" :maxLines="4">
-        <template #textExpandButton="props">
-          <div v-if="props.buttonType == 'oneLine'" :style="{
-            textAlign: 'left',
-            cursor: 'pointer',
-            display: 'flex',
-            justifyContent: 'flex-end'
-          }">
-            <button @click="props.toggle">
-              {{ props.isExpanded ? "Collapse" : "Expand" }}
-            </button>
-          </div>
-          <button @click="props.toggle" v-else>
-            {{ props.isExpanded ? "Collapse" : "Expand" }}
-          </button>
-        </template>
-      </TextClamp>
+```bash
+npm install text-clamp-for-vue3
 ```
 
-## **Properties**
+## Basic Usage
 
-| text: string                      | Component content,it's Required.                                                                                 |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| buttonType?: 'oneLine' \| 'tight' | The unfold collapse button is divided into: 1. oneLine:Occupies a single line 2. tight: Closely adjacent to text |
-| maxLines?: number                 | Sets the number of rows displayed                                                                                |
-| isExpanded?: boolean              | Expanded state, true: expanded, false: collapsed                                                                 |
+```vue
+<template>
+  <TextClamp :text="myText" />
+</template>
+
+<script setup>
+import { TextClamp } from 'text-clamp-for-vue3';
+
+const myText = "This is a long text that will be truncated...";
+</script>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `text` | String | **Required** | Text content to display and truncate |
+| `lines` | Number | `3` | Number of lines to display before truncation |
+| `buttonType` | String | `'tight'` | Button position: `'tight'` (at text end) or `'one-line'` (separate line) |
+| `expandText` | String | `'Expand'` | Text for the expand button |
+| `collapseText` | String | `'Collapse'` | Text for the collapse button |
+| `maxButtonTextLength` | Number | `15` | Maximum length of button text |
+| `buttonAlign` | String | `'right'` | Button alignment: `'left'` or `'right'` (only for 'one-line' type) |
+
+## Custom Button Styling
+
+You can customize the expand/collapse button using the `expandButton` slot:
+
+```vue
+<TextClamp :text="myText">
+  <template #expandButton="{ toggle, isExpanded }">
+    <button class="my-custom-button" @click="toggle">
+      {{ isExpanded ? 'Show Less' : 'Show More' }}
+    </button>
+  </template>
+</TextClamp>
+```
+
+## Examples
+
+### Basic Example
+```vue
+<TextClamp :text="myText" />
+```
+
+### Custom Line Count
+```vue
+<TextClamp :text="myText" :lines="2" />
+```
+
+### One-line Button
+```vue
+<TextClamp :text="myText" buttonType="one-line" />
+```
+
+### Custom Button Text
+```vue
+<TextClamp 
+  :text="myText" 
+  expandText="Read More" 
+  collapseText="Read Less" 
+/>
+```
+
+### Custom Button Alignment
+```vue
+<TextClamp 
+  :text="myText" 
+  buttonType="one-line"
+  buttonAlign="left"
+/>
+```
+
+## Browser Support
+
+TextClamp works in all modern browsers that support Vue 3:
+
+- Chrome
+- Firefox
+- Safari
+- Edge
+
+## License
+
+[MIT](LICENSE)
+
+</div>
+
