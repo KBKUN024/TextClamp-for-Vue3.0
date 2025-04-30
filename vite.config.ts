@@ -10,6 +10,20 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? `/${repoName}/` : '/',
   build: {
     outDir: 'dist',
-    assetsDir: 'assets'
+    assetsDir: 'assets',
+    // 添加源码映射，帮助调试
+    sourcemap: true,
+    // 确保正确处理动态导入
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
+  },
+  // 解决一些路径问题
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
   }
 })

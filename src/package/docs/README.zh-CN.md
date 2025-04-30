@@ -1,7 +1,7 @@
  # TextClamp for Vue 3.0
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yourusername/TextClamp-for-Vue3.0/main/src/assets/logo.jpeg" alt="TextClamp Logo" width="200">
+  <img src="https://raw.githubusercontent.com/KBKUN024/TextClamp-for-Vue3.0/main/src/assets/text-clamp-logo.jpeg" alt="TextClamp Logo" width="200">
 </p>
 
 <p align="center">

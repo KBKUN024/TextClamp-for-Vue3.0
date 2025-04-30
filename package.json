@@ -7,14 +7,14 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
+    "predeploy": "npm run build",
     "deploy": "sh deploy.sh",
     "build:lib": "vite build --config vite.config.lib.ts && vue-tsc --project tsconfig.lib.json",
-    "prepare-npm": "npm run build:lib && rm -rf dist/npm && mkdir -p dist/npm && cp -r dist/lib/* src/package/package.json README.md dist/npm/ && rm -f dist/npm/vite.svg && rm -f dist/npm/TextClamp.vue && rm -f dist/npm/index.ts",
+    "prepare-npm": "npm run build:lib && rm -rf dist/npm && mkdir -p dist/npm && cp -r dist/lib/* src/package/package.json src/package/docs/README.md src/package/docs/README.zh-CN.md dist/npm/ && rm -f dist/npm/vite.svg && rm -f dist/npm/TextClamp.vue && rm -f dist/npm/index.ts",
     "publish-npm": "cd dist/npm && npm publish"
   },
   "dependencies": {
     "@highlightjs/vue-plugin": "^2.1.0",
-    "highlight.js": "^11.11.1",
     "vue": "^3.2.45"
   },
   "devDependencies": {

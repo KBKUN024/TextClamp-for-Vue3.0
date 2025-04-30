@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineProps, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
 // 定义props
 const props = defineProps<{

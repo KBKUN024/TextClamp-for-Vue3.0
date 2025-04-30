@@ -1,10 +1,17 @@
-# TextClamp for Vue 3.0
+ # TextClamp for Vue 3.0
 
 <p align="center">
-  <img src="./src/assets/text-clamp-logo.jpeg" alt="TextClamp Logo" width="200">
+  <img src="https://raw.githubusercontent.com/KBKUN024/TextClamp-for-Vue3.0/main/src/assets/text-clamp-logo.jpeg" alt="TextClamp Logo" width="200">
 </p>
+
 <p align="center">
-  <a href="./README.md" id="en-link">English</a> | <a href="./README.zh-CN.md" id="zh-link">中文</a>
+  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://img.shields.io/npm/v/text-clamp-for-vue3.svg" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://img.shields.io/npm/dm/text-clamp-for-vue3.svg" alt="downloads"></a>
+  <a href="https://github.com/yourusername/TextClamp-for-Vue3.0/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/text-clamp-for-vue3.svg" alt="license"></a>
+</p>
+
+<p align="center">
+  <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
 </p>
 
 ## 简介
@@ -13,7 +20,7 @@ TextClamp 是一个轻量级的 Vue 3 文本截断组件，提供优雅的"展�
 
 ## 特性
 
-- ⚡️ **轻量级** - 对您的bundle大小影响最小
+- ⚡️ **轻量级** - 对您的bundle大小影响最小（gzip压缩后仅约5.7KB）
 - 🔥 **简洁API** - 只需传入文本即可使用！
 - 📐 **精确控制行数** - 精确指定显示的文本行数
 - 🎨 **按钮自定义** - 自由选择按钮位置和样式

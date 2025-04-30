@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import "./style.css";
-import TextClampPlugin from './package/index';
+import TextClamp from './package/index';
 import App from "./App.vue";
 
 // 导入highlightjs相关内容
@@ -40,6 +40,6 @@ hljs.configure({
 })
 
 const app = createApp(App);
-app.use(TextClampPlugin);
+app.use(TextClamp);
 app.use(hljsVuePlugin);
 app.mount("#app");

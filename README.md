@@ -1,14 +1,18 @@
-# TextClamp for Vue 3.0
+ # TextClamp for Vue 3.0
 
 <p align="center">
-  <img src="./src/assets/text-clamp-logo.jpeg" alt="TextClamp Logo" width="200">
+  <img src="https://raw.githubusercontent.com/KBKUN024/TextClamp-for-Vue3.0/main/src/assets/text-clamp-logo.jpeg" alt="TextClamp Logo" width="200">
 </p>
 
 <p align="center">
-  <a href="./README.md" id="en-link">English</a> | <a href="./README.zh-CN.md" id="zh-link">中文</a>
+  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://img.shields.io/npm/v/text-clamp-for-vue3.svg" alt="npm"></a>
+  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://img.shields.io/npm/dm/text-clamp-for-vue3.svg" alt="downloads"></a>
+  <a href="https://github.com/yourusername/TextClamp-for-Vue3.0/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/text-clamp-for-vue3.svg" alt="license"></a>
 </p>
 
-<div id="english-doc">
+<p align="center">
+  <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
+</p>
 
 ## Introduction
 
@@ -16,7 +20,7 @@ TextClamp is a lightweight Vue 3 component for elegant text truncation with "exp
 
 ## Features
 
-- ⚡️ **Lightweight** - Minimal impact on your bundle size
+- ⚡️ **Lightweight** - Minimal impact on your bundle size (~5.7KB gzipped)
 - 🔥 **Simple API** - Just pass your text and go!
 - 📐 **Line Control** - Specify exactly how many lines to display
 - 🎨 **Customizable Buttons** - Choose button position and style
@@ -118,6 +122,3 @@ TextClamp works in all modern browsers that support Vue 3:
 ## License
 
 [MIT](LICENSE)
-
-</div>
-

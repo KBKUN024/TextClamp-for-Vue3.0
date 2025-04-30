@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import Card from "./components/Card.vue";
 import { ref, computed } from "vue";
-import TextClamp from './package/TextClamp.vue';
 
 // 导入ButtonType类型
 type ButtonType = 'tight' | 'one-line';
