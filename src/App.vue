@@ -67,17 +67,8 @@ const text = ref("Very long text...");
 <\/script>`,
   customButton: `<template>
   <!-- Fully customized button with slot -->
-  <TextClamp :text="text" buttonType="tight">
-    <template #expandButton="{ toggle, isExpanded, buttonType }">
-      <button 
-        class="custom-button" 
-        :class="{ 'custom-button--tight': buttonType === 'tight' }"
-        @click="toggle"
-        :title="isExpanded ? 'Collapse' : 'Expand'">
-        {{ isExpanded ? '↑ Collapse' : '↓ Expand' }}
-      </button>
-    </template>
-</TextClamp>
+  <TextClamp :text="text" buttonStyle="primary"
+                  buttonClass="my-custom-button" expandText="Show more" collapseText="Show less" />
 </template>
 
 <script setup>
@@ -85,23 +76,7 @@ import TextClamp from 'textclamp-vue3';
 import { ref } from 'vue';
 
 const text = ref("Very long text...");
-<\/script>
-
-<style scoped>
-.custom-button {
-  background-color: purple;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-.custom-button--tight {
-  margin-left: 8px;
-  vertical-align: middle;
-}
-</style>`,
+<\/script>`,
   longButtonText: `<template>
   <!-- Testing text truncation with very long button text -->
   <TextClamp 
@@ -135,24 +110,8 @@ const text = ref("Very long text...");
 <\/script>`,
   customOneLineButton: `<template>
   <!-- Custom button with one-line style and left alignment -->
-  <TextClamp 
-    :text="text" 
-    buttonType="one-line"
-    buttonAlign="left"
-  >
-    <template #expandButton="{ toggle, isExpanded, buttonType, buttonAlign }">
-      <button 
-        class="custom-button" 
-        :class="{ 
-          'custom-button--one-line': buttonType === 'one-line',
-          'custom-button--align-left': buttonAlign === 'left'
-        }"
-        @click="toggle"
-        :title="isExpanded ? 'Collapse' : 'Expand'">
-        {{ isExpanded ? '↑ 收起' : '↓ 展开' }}
-      </button>
-    </template>
-</TextClamp>
+    <TextClamp :text="text" buttonStyle="primary"
+                  buttonClass="my-custom-button" buttonType="one-line" buttonAlign="left" />
 </template>
 
 <script setup>
@@ -160,27 +119,7 @@ import TextClamp from 'textclamp-vue3';
 import { ref } from 'vue';
 
 const text = ref("Very long text...");
-<\/script>
-
-<style scoped>
-.custom-button {
-  background-color: purple;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-.custom-button--one-line {
-  margin-top: 8px;
-  display: block;
-}
-
-.custom-button--align-left {
-  margin-right: auto;
-}
-</style>`
+<\/script>`
 };
 
 // 卡片数据配置，便于复用和管理
@@ -263,8 +202,18 @@ const exampleCards = computed(() => [
   <div class="app-container">
     <div class="container">
       <header class="header">
-        <h1 class="heading">TextClamp Component</h1>
+        <h1 class="heading">TextClamp Component<a href="https://github.com/KBKUN024/TextClamp-for-Vue3.0#readme"
+            target="_blank" rel="noopener noreferrer" class="github-link">
+            <!-- SVG 直接嵌入 -->
+            <svg class="github-icon" viewBox="0 0 16 16" width="24" height="24">
+              <path fill="#fff"
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+            </svg>
+            <!-- 或用图片 -->
+            <!-- <img src="@/assets/github-mark.png" alt="GitHub" /> -->
+          </a></h1>
         <p class="description">A Vue 3 component for clamping text with customizable expand/collapse functionality</p>
+
       </header>
 
       <main class="main-content">
@@ -281,24 +230,12 @@ const exampleCards = computed(() => [
               <p class="card-subtitle">{{ card.description }}</p>
 
               <div class="text-clamp-wrapper">
-                <!-- 自定义按钮示例 -->
-                <TextClamp v-if="card.customButton" v-bind="card.props">
-                  <template
-                    #expandButton="{ toggle, isExpanded, buttonType, buttonAlign, limitedExpandText, limitedCollapseText }">
-                    <button class="custom-button" :class="{
-                      'custom-button--tight': (buttonType as string) === 'tight',
-                      'custom-button--one-line': (buttonType as string) === 'one-line',
-                      'custom-button--align-right': (buttonType as string) === 'one-line' && (buttonAlign as string) === 'right',
-                      'custom-button--align-left': (buttonType as string) === 'one-line' && (buttonAlign as string) === 'left'
-                    }" @click="(e) => toggle(e)"
-                      :title="isExpanded ? card.props.collapseText || 'Collapse' : card.props.expandText || 'Expand'">
-                      {{ isExpanded ? '↑ ' + limitedCollapseText : '↓ ' + limitedExpandText }}
-                    </button>
-                  </template>
-                </TextClamp>
-
+                <!-- 自定义按钮示例（使用props配置，无需slot） -->
+                <TextClamp v-if="card.customButton" v-bind="card.props" buttonStyle="primary"
+                  buttonClass="my-custom-button" expandText="Show more" collapseText="Show less" />
                 <!-- 常规TextClamp示例 -->
                 <TextClamp v-else v-bind="card.props" />
+
               </div>
             </template>
           </Card>
@@ -337,7 +274,10 @@ const exampleCards = computed(() => [
 .header {
   text-align: center;
   margin-bottom: 3rem;
+  padding-bottom: 1rem;
 }
+
+
 
 .heading {
   font-size: 2.5rem;
@@ -348,6 +288,32 @@ const exampleCards = computed(() => [
   background: linear-gradient(to right, hsl(217.2 91.2% 59.8%), hsl(215.4 98.3% 73.9%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  position: relative;
+}
+
+.heading svg {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  transition: transform 0.3s ease;
+
+}
+
+.heading svg:hover {
+  transform: scale(1.3);
+}
+
+@media (max-width:639px) {
+  .heading svg {
+    right: 30px;
+  }
+}
+
+@media (max-width:430px) {
+  .heading svg {
+    right: 0;
+    top: 160px ;
+  }
 }
 
 .description {
@@ -389,6 +355,7 @@ const exampleCards = computed(() => [
   margin: 0;
   padding: 0;
 }
+
 .example-card .banner-image {
   width: 100%;
   height: 100%;

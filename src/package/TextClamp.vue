@@ -4,6 +4,7 @@ import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 // 类型定义
 type ButtonType = 'tight' | 'one-line';
 type ButtonAlign = 'left' | 'right';
+type ButtonStyle = 'default' | 'primary' | 'outline' | 'text';
 
 // 组件属性定义
 const props = withDefaults(defineProps<{
@@ -14,13 +15,19 @@ const props = withDefaults(defineProps<{
   collapseText?: string;           // 收起按钮文本
   maxButtonTextLength?: number;    // 按钮文本最大长度
   buttonAlign?: ButtonAlign;       // 按钮对齐方式（只对 'one-line' 类型有效）
+  buttonStyle?: ButtonStyle;       // 按钮样式：default, primary, outline, text
+  buttonIcon?: boolean;            // 是否显示按钮图标
+  buttonClass?: string;            // 自定义按钮类名
 }>(), {
   lines: 3,
   buttonType: 'tight',
   expandText: 'Expand',
   collapseText: 'Collapse',
   maxButtonTextLength: 15,         // 默认最大按钮文本长度
-  buttonAlign: 'right'             // 默认对齐方式为右对齐
+  buttonAlign: 'right',            // 默认对齐方式为右对齐
+  buttonStyle: 'default',          // 默认按钮样式
+  buttonIcon: true,                // 默认显示图标
+  buttonClass: ''                  // 默认无自定义类名
 })
 
 // 元素引用
@@ -367,15 +374,27 @@ const toggleText = computed(() => {
   return truncateText(text, props.maxButtonTextLength)
 })
 
-// 用于暴露给插槽的按钮文本，包含长度限制
-const limitedExpandText = computed(() => truncateText(props.expandText, props.maxButtonTextLength))
-const limitedCollapseText = computed(() => truncateText(props.collapseText, props.maxButtonTextLength))
+// 按钮图标
+const buttonIconContent = computed(() => {
+  if (!props.buttonIcon) return '';
+  return expanded.value ? '↑' : '↓';
+})
 
 // 按钮类样式
-const buttonClass = computed(() => {
-  const classes = ['text-clamp-button', `text-clamp-button--${props.buttonType}`]
-  // 移除未使用的类，只保留必要的类名
-  return classes
+const buttonClasses = computed(() => {
+  // 基础类
+  const classes = [
+    'text-clamp-button', 
+    `text-clamp-button--${props.buttonType}`,
+    `text-clamp-button--style-${props.buttonStyle}`
+  ];
+  
+  // 添加自定义类名
+  if (props.buttonClass) {
+    classes.push(props.buttonClass);
+  }
+  
+  return classes;
 })
 
 // 导出组件方法给外部使用
@@ -392,28 +411,25 @@ defineExpose({
     <!-- 仅当需要截断时显示按钮 -->
     <template v-if="showButton">
       <!-- 为one-line模式添加包装容器 -->
-      <div v-if="buttonType === 'one-line'" 
+      <div v-if="props.buttonType === 'one-line'" 
            :class="[
              'text-clamp-button--one-line-wrapper', 
-             `text-clamp-button--one-line-wrapper-${buttonAlign}`
+             `text-clamp-button--one-line-wrapper-${props.buttonAlign}`
            ]">
-        <!-- 使用插槽自定义按钮 -->
+        <!-- 使用插槽自定义按钮，但提供完善的默认实现 -->
         <slot name="expandButton" 
               :toggle="toggle" 
-              :is-expanded="expanded"
-              :button-type="buttonType"
-              :button-align="buttonAlign"
-              :limited-expand-text="limitedExpandText"
-              :limited-collapse-text="limitedCollapseText">
+              :is-expanded="expanded">
           
           <!-- 默认按钮实现 -->
           <button
             ref="buttonRef"
-            :class="buttonClass"
+            :class="buttonClasses"
             type="button"
             @click="toggle"
             :title="expanded ? props.collapseText : props.expandText">
-            {{ toggleText }}
+            <span v-if="props.buttonIcon" class="text-clamp-button__icon">{{ buttonIconContent }}</span>
+            <span class="text-clamp-button__text">{{ toggleText }}</span>
           </button>
         </slot>
       </div>
@@ -421,20 +437,17 @@ defineExpose({
       <!-- 为tight模式保持原有结构 -->
       <slot v-else name="expandButton" 
             :toggle="toggle" 
-            :is-expanded="expanded"
-            :button-type="buttonType"
-            :button-align="buttonAlign"
-            :limited-expand-text="limitedExpandText"
-            :limited-collapse-text="limitedCollapseText">
+            :is-expanded="expanded">
         
         <!-- 默认按钮实现 -->
         <button
           ref="buttonRef"
-          :class="buttonClass"
+          :class="buttonClasses"
           type="button"
           @click="toggle"
           :title="expanded ? props.collapseText : props.expandText">
-          {{ toggleText }}
+          <span v-if="props.buttonIcon" class="text-clamp-button__icon">{{ buttonIconContent }}</span>
+          <span class="text-clamp-button__text">{{ toggleText }}</span>
         </button>
       </slot>
     </template>
@@ -462,12 +475,29 @@ defineExpose({
   font-size: 0.875rem;
   font-family: inherit;
   padding: 0 4px;
-  transition: color 0.2s, transform 0.5s ease;
+  transition: color 0.2s, transform 0.2s ease;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 150px; /* 按钮宽度限制 */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 按钮图标 */
+.text-clamp-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+/* 按钮文本 */
+.text-clamp-button__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 按钮悬停效果 */
@@ -478,13 +508,13 @@ defineExpose({
 
 /* 紧贴文本样式 - 按钮和文本在同一行 */
 .text-clamp-button--tight {
-  display: inline;
+  display: inline-flex;
   margin-left: 4px;
 }
 
 /* 单独一行样式 - 使用包装div实现按钮对齐但不占满整行 */
 .text-clamp-button--one-line {
-  display: inline-block; /* 使用内联块级元素 */
+  display: inline-flex; /* 使用内联块级元素 */
   width: auto; /* 宽度适应内容 */
   margin-top: 8px;
 }
@@ -506,36 +536,40 @@ defineExpose({
   text-align: right;
 }
 
-/* 自定义按钮样式 */
-:deep(.custom-button--tight) {
-  display: inline !important;
-  margin-left: 4px !important;
-  margin-top: 0 !important;
-  vertical-align: middle !important;
-  max-width: 150px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+/* 按钮样式变体 */
+/* 默认样式 */
+.text-clamp-button--style-default {
+  background: none;
+  border: none;
+  color: hsl(217.2 91.2% 59.8%);
 }
 
-:deep(.custom-button--one-line) {
-  display: inline-block !important;
-  margin-top: 8px !important;
-  max-width: 150px !important;
-  width: auto !important;
+/* Primary样式 */
+.text-clamp-button--style-primary {
+  background-color: hsl(217.2 91.2% 59.8%);
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-:deep(.text-clamp-button--one-line-wrapper) {
-  display: block !important;
-  width: 100% !important;
+/* Outline样式 */
+.text-clamp-button--style-outline {
+  background-color: transparent;
+  color: hsl(217.2 91.2% 59.8%);
+  border: 1px solid hsl(217.2 91.2% 59.8%);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
 }
 
-:deep(.text-clamp-button--one-line-wrapper-left) {
-  text-align: left !important;
-}
-
-:deep(.text-clamp-button--one-line-wrapper-right) {
-  text-align: right !important;
+/* Text样式 */
+.text-clamp-button--style-text {
+  background: none;
+  border: none;
+  color: hsl(217.2 91.2% 59.8%);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 </style>
 

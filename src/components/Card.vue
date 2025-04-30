@@ -250,7 +250,6 @@ onMounted(() => {
 
 pre {
     margin: 0;
-    padding: 1rem;
     overflow: auto;
     height: 100%;
     width: 100%;

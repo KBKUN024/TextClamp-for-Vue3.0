@@ -63,10 +63,39 @@ const myText = "这是一段很长的文本，将会被截断...";
 | `collapseText` | String | `'收起'` | 收起按钮的文本 |
 | `maxButtonTextLength` | Number | `15` | 按钮文本的最大长度 |
 | `buttonAlign` | String | `'right'` | 按钮对齐方式：`'left'` 或 `'right'`（仅适用于 'one-line' 类型） |
+| `buttonStyle` | String | `'default'` | 按钮样式：`'default'`（默认）, `'primary'`（主要）, `'outline'`（轮廓）, 或 `'text'`（文本） |
+| `buttonIcon` | Boolean | `true` | 是否显示按钮图标（上/下箭头） |
+| `buttonClass` | String | `''` | 应用于按钮的自定义CSS类 |
 
 ## 自定义按钮样式
 
-你可以使用 `expandButton` 插槽自定义展开/收起按钮：
+有两种方式可以自定义按钮：
+
+### 1. 使用属性（推荐）
+
+最简单的自定义按钮方式是使用提供的属性：
+
+```vue
+<TextClamp 
+  :text="myText" 
+  buttonStyle="primary"
+  buttonAlign="left"
+  buttonClass="my-custom-button"
+  expandText="查看更多"
+  collapseText="收起"
+/>
+```
+
+这种方法允许您：
+- 从预定义的按钮样式中选择
+- 设置对齐方式
+- 添加自定义CSS类
+- 自定义文本
+- 无需编写额外的模板代码
+
+### 2. 使用插槽（高级）
+
+对于完全自定义，您可以使用 `expandButton` 插槽：
 
 ```vue
 <TextClamp :text="myText">
@@ -90,26 +119,30 @@ const myText = "这是一段很长的文本，将会被截断...";
 <TextClamp :text="myText" :lines="2" />
 ```
 
-### 单独一行的按钮
+### 左对齐的单行按钮
 ```vue
-<TextClamp :text="myText" buttonType="one-line" />
+<TextClamp :text="myText" buttonType="one-line" buttonAlign="left" />
 ```
 
-### 自定义按钮文本
+### 主要样式按钮
+```vue
+<TextClamp :text="myText" buttonStyle="primary" />
+```
+
+### 无图标的轮廓按钮
 ```vue
 <TextClamp 
   :text="myText" 
-  expandText="查看更多" 
-  collapseText="收起" 
+  buttonStyle="outline"
+  :buttonIcon="false"
 />
 ```
 
-### 自定义按钮对齐方式
+### 自定义按钮类
 ```vue
 <TextClamp 
   :text="myText" 
-  buttonType="one-line"
-  buttonAlign="left"
+  buttonClass="my-custom-button"
 />
 ```
 

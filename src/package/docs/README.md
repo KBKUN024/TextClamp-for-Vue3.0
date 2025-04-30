@@ -1,18 +1,10 @@
  # TextClamp for Vue 3.0
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/KBKUN024/TextClamp-for-Vue3.0/main/src/assets/text-clamp-logo.jpeg" alt="TextClamp Logo" width="200">
-</p>
-
-<p align="center">
-  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://img.shields.io/npm/v/text-clamp-for-vue3.svg" alt="npm"></a>
-  <a href="https://www.npmjs.com/package/text-clamp-for-vue3"><img src="https://img.shields.io/npm/dm/text-clamp-for-vue3.svg" alt="downloads"></a>
-  <a href="https://github.com/yourusername/TextClamp-for-Vue3.0/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/text-clamp-for-vue3.svg" alt="license"></a>
-</p>
-
-<p align="center">
   <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
 </p>
+
+<a href="https://kbkun024.github.io/TextClamp-for-Vue3.0/">Demo Here</a>
 
 ## Introduction
 
@@ -60,10 +52,39 @@ const myText = "This is a long text that will be truncated...";
 | `collapseText` | String | `'Collapse'` | Text for the collapse button |
 | `maxButtonTextLength` | Number | `15` | Maximum length of button text |
 | `buttonAlign` | String | `'right'` | Button alignment: `'left'` or `'right'` (only for 'one-line' type) |
+| `buttonStyle` | String | `'default'` | Button style: `'default'`, `'primary'`, `'outline'`, or `'text'` |
+| `buttonIcon` | Boolean | `true` | Whether to show button icon (up/down arrow) |
+| `buttonClass` | String | `''` | Custom CSS class(es) to apply to the button |
 
 ## Custom Button Styling
 
-You can customize the expand/collapse button using the `expandButton` slot:
+There are two ways to customize the button:
+
+### 1. Using Props (Recommended)
+
+The simplest way to customize the button is to use the provided props:
+
+```vue
+<TextClamp 
+  :text="myText" 
+  buttonStyle="primary"
+  buttonAlign="left"
+  buttonClass="my-custom-button"
+  expandText="Show More"
+  collapseText="Show Less"
+/>
+```
+
+This approach allows you to:
+- Choose from predefined button styles
+- Set alignment
+- Add custom CSS classes
+- Customize text
+- No need to write additional template code
+
+### 2. Using Slots (Advanced)
+
+For complete customization, you can use the `expandButton` slot:
 
 ```vue
 <TextClamp :text="myText">
@@ -87,26 +108,30 @@ You can customize the expand/collapse button using the `expandButton` slot:
 <TextClamp :text="myText" :lines="2" />
 ```
 
-### One-line Button
+### One-line Button with Left Alignment
 ```vue
-<TextClamp :text="myText" buttonType="one-line" />
+<TextClamp :text="myText" buttonType="one-line" buttonAlign="left" />
 ```
 
-### Custom Button Text
+### Primary Button Style
+```vue
+<TextClamp :text="myText" buttonStyle="primary" />
+```
+
+### Outline Button Style without Icon
 ```vue
 <TextClamp 
   :text="myText" 
-  expandText="Read More" 
-  collapseText="Read Less" 
+  buttonStyle="outline"
+  :buttonIcon="false"
 />
 ```
 
-### Custom Button Alignment
+### Custom Button Class
 ```vue
 <TextClamp 
   :text="myText" 
-  buttonType="one-line"
-  buttonAlign="left"
+  buttonClass="my-custom-button"
 />
 ```
 

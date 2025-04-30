@@ -1,6 +1,6 @@
 {
   "name": "text-clamp-for-vue3",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "A Vue 3 component for clamping text with customizable expand/collapse functionality",
   "main": "text-clamp.umd.js",
   "module": "text-clamp.es.js",
