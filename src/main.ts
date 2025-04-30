@@ -3,7 +3,7 @@ import "./style.css";
 import TextClamp from './package/index';
 import App from "./App.vue";
 
-// 导入highlightjs相关内容
+// 导入highlightjs相关内容（使用ESM兼容方式）
 import 'highlight.js/styles/atom-one-dark.css'
 import hljs from 'highlight.js/lib/core'
 import hljsVuePlugin from '@highlightjs/vue-plugin'
@@ -21,14 +21,18 @@ hljs.registerLanguage('xml', xml)
 hljs.registerLanguage('css', css)
 
 // 自定义Vue语言定义
-hljs.registerLanguage('vue', function(hljs) {
+hljs.registerLanguage('vue', function() {
   return {
     name: 'Vue',
     subLanguage: ['xml', 'javascript', 'typescript', 'css'],
     contains: [
-      hljs.COMMENT('<!--', '-->', {
+      {
+        className: 'comment',
+        begin: '<!--',
+        end: '-->',
+        contains: [],
         relevance: 10
-      })
+      }
     ]
   }
 })

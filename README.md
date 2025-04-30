@@ -14,6 +14,8 @@
   <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
 </p>
 
+<a href="https://kbkun024.github.io/TextClamp-for-Vue3.0/">Demo Here</a>
+
 ## Introduction
 
 TextClamp is a lightweight Vue 3 component for elegant text truncation with "expand/collapse" functionality. It provides an intuitive way to handle large blocks of text in your Vue applications.

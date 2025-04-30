@@ -14,6 +14,9 @@
   <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
 </p>
 
+<a href="https://kbkun024.github.io/TextClamp-for-Vue3.0/">查看演示</a>
+
+
 ## 简介
 
 TextClamp 是一个轻量级的 Vue 3 文本截断组件，提供优雅的"展开/收起"功能。它为您的 Vue 应用提供了一种直观处理大段文本的方式。
