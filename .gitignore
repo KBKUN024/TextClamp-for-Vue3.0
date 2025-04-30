@@ -27,3 +27,4 @@ src/output
 src/todo
 deploy.sh
 /output
+/src/package/*

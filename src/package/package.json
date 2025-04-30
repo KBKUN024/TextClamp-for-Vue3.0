@@ -1,6 +1,6 @@
 {
   "name": "text-clamp-for-vue3",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Vue 3 component for clamping text with customizable expand/collapse functionality",
   "main": "text-clamp.umd.js",
   "module": "text-clamp.es.js",
@@ -35,12 +35,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/TextClamp-for-Vue3.0.git"
+    "url": "git+https://github.com/KBKUN024/TextClamp-for-Vue3.0.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/TextClamp-for-Vue3.0/issues"
+    "url": "https://github.com/KBKUN024/TextClamp-for-Vue3.0/issues"
   },
-  "homepage": "https://github.com/yourusername/TextClamp-for-Vue3.0#readme",
+  "homepage": "https://github.com/KBKUN024/TextClamp-for-Vue3.0#readme",
   "peerDependencies": {
     "vue": "^3.0.0"
   }
